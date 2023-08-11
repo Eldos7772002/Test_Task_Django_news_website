@@ -3,7 +3,7 @@
 1. Клонируйте репозиторий:
 
    ```bash
-   git clone https://github.com/ваш-юзернейм/ваш-репозиторий.git
+   git clone https://github.com/Eldos7772002/Test_Task_Django_news_website.git
 Перейдите в папку проекта:
 
     cd Test_task
