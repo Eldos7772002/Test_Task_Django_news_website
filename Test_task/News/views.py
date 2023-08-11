@@ -1,33 +1,15 @@
+
 from django.http import request, JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.generic import ListView
 
-from .models import Category, Author, Article, Country
+from .models import Category, Author, Article, Country, ViewedArticle
 from django.db.models import Prefetch
 import requests
 import pymorphy2
 
 
-
-class CategoryListView(ListView):
-    model = Category
-    category_name = "Шоу-биз"  # Замените на нужное имя категории
-    category = Category.objects.get(name=category_name)
-    template_name = 'News/category_list.html'  # Создайте этот шаблон
-
-def Count(requests):
-    countries = Country.objects.all()
-    articles_by_category = {}
-
-    for idx, country in enumerate(countries):
-        countries[idx].dative_name = add_dative_ending_russian(country.name)  # Добавляем поле с именем в дательном падеже
-        context = {
-
-            'articles_by_category': articles_by_category,
-            'countries': countries,
-
-        }
-    return render(request, 'news/base.html', context)
 
 
 def show_category(request, category_name):
@@ -115,7 +97,6 @@ class ArticleListView(ListView):
 
 
 
-
 def index(request):
     articles = Article.objects.all().order_by('-pub_date')
     countries = Country.objects.all()
@@ -125,7 +106,8 @@ def index(request):
     articles_by_category = {}
     prefetch_articles = Prefetch('article_set', queryset=Article.objects.all())
     categories = categories.prefetch_related(prefetch_articles)
-
+    viewed_articles = ViewedArticle.objects.select_related('article').order_by('-viewed_at')[:10]
+    titles = [article.article.title for article in viewed_articles]
     for idx, country in enumerate(countries):
         countries[idx].dative_name = add_dative_ending_russian(country.name)  # Добавляем поле с именем в дательном падеже
 
@@ -139,6 +121,7 @@ def index(request):
         'articles_by_category': articles_by_category,
         'countries': countries,
         'category': category,
+        'titles': titles
     }
     return render(request, 'news/index.html', context)
 

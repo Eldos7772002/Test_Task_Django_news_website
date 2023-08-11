@@ -30,6 +30,8 @@ class Country(models.Model):
         return self.name
 
 
+
+
 class Article(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
@@ -39,5 +41,11 @@ class Article(models.Model):
     image = models.ImageField(verbose_name='Фото')
     country = models.ForeignKey(Country, on_delete=models.CASCADE)  # Добавленное поле
     views = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return self.title
+
+
+class ViewedArticle(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
