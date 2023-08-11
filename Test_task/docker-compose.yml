@@ -7,3 +7,9 @@ services:
       - .:/code
     ports:
       - 8000:8000
+
+  createsuperuser:
+    build: .
+    command: python manage.py shell -c "from django.contrib.auth.models import User; User.objects.create_superuser('Admin', 'admin@example.com', 'Admin')"
+    depends_on:
+      - web
