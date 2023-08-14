@@ -1,14 +1,15 @@
-
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.http import request, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import ListView
 
-from .models import Category, Author, Article, Country, ViewedArticle
+from .models import Category, Author, Article, Country, ViewedArticle, Email
 from django.db.models import Prefetch
 import requests
 import pymorphy2
-
+from django.utils.html import strip_tags
 
 
 
@@ -104,6 +105,10 @@ def index(request):
     other_articles = articles[1:]
     categories = Category.objects.all()
     articles_by_category = {}
+    if request.method == 'POST':
+        email_address = request.POST.get('email')
+        if email_address:
+            email = Email.objects.create(email=email_address)
     prefetch_articles = Prefetch('article_set', queryset=Article.objects.all())
     categories = categories.prefetch_related(prefetch_articles)
     viewed_articles = ViewedArticle.objects.select_related('article').order_by('-viewed_at')[:10]
@@ -127,6 +132,7 @@ def index(request):
 
 
 
+
 def articles_by_category(request):
     categories = Category.objects.all()
 
@@ -135,7 +141,9 @@ def articles_by_category(request):
 
 
 
+
 morph = pymorphy2.MorphAnalyzer()
+
 
 def to_dative_case_russian(word):
     parsed_word = morph.parse(word)[0]

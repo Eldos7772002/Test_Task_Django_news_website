@@ -1,6 +1,9 @@
+from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
-
+from django.db import models
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 
 class Category(models.Model):
 
@@ -30,7 +33,11 @@ class Country(models.Model):
         return self.name
 
 
+class Email(models.Model):
+    email = models.EmailField()
 
+    def __str__(self):
+        return self.email
 
 class Article(models.Model):
     title = models.CharField(max_length=200)
@@ -44,6 +51,19 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
+@receiver(pre_save, sender=Article)
+def send_notification_email(sender, instance, **kwargs):
+    if instance.pk is None:  # Проверяем, что статья создается, а не обновляется
+        subject = 'Новая статья добавлена'
+        message = f'Добавлена новая статья в КАЗПРЕСС: {instance.title}\nСсылка: example.com/articles/{instance.pk}/'
+        from_email = 'mira070707@mail.ru'
+
+        recipient_list = Email.objects.values_list('email', flat=True)
+
+        send_mail(subject, message, from_email, recipient_list)
+
 
 
 class ViewedArticle(models.Model):
